@@ -5,6 +5,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.text import slugify
+from phonenumber_field.modelfields import PhoneNumberField
 
 
 def custom_image_file_path(instance, filename, folder):
@@ -30,17 +31,23 @@ class Comment(models.Model):
     def __str__(self):
         return f"{self.author}, {self.created_at}"
 
+    class Meta:
+        ordering = ["created_at"]
+
 
 class Post(models.Model):
     title = models.CharField(max_length=255, blank=False, null=False)
     content = models.TextField(blank=False, null=False)
-    image = models.ImageField(null=True, upload_to=post_image_file_path)
+    image = models.ImageField(null=True, blank=True, upload_to=post_image_file_path)
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
-    comments = models.ManyToManyField(to=Comment, related_name="posts")
+    comments = models.ManyToManyField(to=Comment, blank=True, related_name="posts")
 
     def __str__(self):
         return f"{self.title}, author: {self.author}"
+
+    class Meta:
+        ordering = ["created_at"]
 
 
 class Reaction(models.Model):
@@ -55,6 +62,9 @@ class Reaction(models.Model):
     def __str__(self):
         return f"{self.post}, {self.reaction_type}"
 
+    class Meta:
+        unique_together = ("user", "post")
+
 
 class Follow(models.Model):
     follower = models.ForeignKey(
@@ -64,33 +74,43 @@ class Follow(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="followers"
     )
 
+    def clean(self):
+        if self.follower == self.following:
+            raise ValidationError("You can't follow yourself")
+
+    def save(
+            self,
+            force_insert=False,
+            force_update=False,
+            using=None,
+            update_fields=None
+    ):
+        self.full_clean()
+        return super(Follow, self).save(
+            force_insert, force_update, using, update_fields
+        )
+
     def __str__(self):
         return f"{self.follower}, {self.following}"
+
+    class Meta:
+        unique_together = ("follower", "following")
 
 
 class Profile(models.Model):
     nickname = models.CharField(max_length=68, unique=True)
     first_name = models.CharField(max_length=68, null=True)
     last_name = models.CharField(max_length=68, null=True)
-    photo = models.ImageField(null=True, upload_to=profile_image_file_path)
+    photo = models.ImageField(null=True, blank=True, upload_to=profile_image_file_path)
     biography = models.TextField()
-    phone_number = models.IntegerField()
-    posts = models.ManyToManyField(to=Post, related_name="profiles")
-    followers = models.ManyToManyField(to=Follow, related_name="following_profiles")
-    followings = models.ManyToManyField(to=Follow, related_name="follower_profiles")
+    phone_number = PhoneNumberField(null=True, blank=True)
+    posts = models.ManyToManyField(to=Post, blank=True, related_name="profiles")
+    followers = models.ManyToManyField(to=Follow, blank=True, related_name="following_profiles")
+    followings = models.ManyToManyField(to=Follow, blank=True, related_name="follower_profiles")
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-
-    def clean(self):
-        if self.phone_number != 10:
-            raise ValidationError("Phone number must contain 10 digits")
-
-    def save(
-        self, force_insert=False, force_update=False, using=None, update_fields=None
-    ):
-        self.full_clean()
-        return super(Profile, self).save(
-            force_insert, force_update, using, update_fields
-        )
 
     def __str__(self):
         return self.nickname
+
+    class Meta:
+        ordering = ["nickname"]
