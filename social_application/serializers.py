@@ -70,14 +70,17 @@ class PostListSerializer(serializers.ModelSerializer):
     dislikes_count = serializers.SerializerMethodField()
     created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M", read_only=True)
 
-    def get_comments_count(self, obj):
+    @staticmethod
+    def get_comments_count(obj) -> int:
         return obj.comments.count()
 
-    def get_likes_count(self, obj):
+    @staticmethod
+    def get_likes_count(obj) -> int:
         like = obj.reactions.filter(reaction_type="like")
         return like.count()
 
-    def get_dislikes_count(self, obj):
+    @staticmethod
+    def get_dislikes_count(obj) -> int:
         dislike = obj.reactions.filter(reaction_type="dislike")
         return dislike.count()
 
