@@ -10,7 +10,7 @@ User = get_user_model()
 
 def post_image_file_path(instance, filename):
     _, extension = os.path.splitext(filename)
-    filename = f"{slugify(instance.name)}-{uuid.uuid4()}{extension}"
+    filename = f"{slugify(instance)}-{uuid.uuid4()}{extension}"
 
     return os.path.join("uploads", "posts", filename)
 
@@ -25,6 +25,9 @@ class Post(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.title}, author: {self.author.username}"
 
 
 class Comment(models.Model):
@@ -54,7 +57,4 @@ class Reaction(models.Model):
     reaction_type = models.CharField(max_length=7, choices=ReactionTypeChoices.choices)
 
     def __str__(self):
-        return f"{self.post} {self.reaction_type}d by {self.user}"
-
-    class Meta:
-        unique_together = ("user", "post")
+        return f"{self.post.title} {self.reaction_type}d by {self.user}"
