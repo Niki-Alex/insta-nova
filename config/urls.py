@@ -22,7 +22,8 @@ from django.urls import path, include
 urlpatterns = [
     path("admin/", admin.site.urls),
     path(
-        "api/insta-nova/",
+        "api/blog/",
         include("social_application.urls", namespace="social_application")
     ),
+    path("api/user/", include("user.urls", namespace="user")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

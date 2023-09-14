@@ -50,11 +50,26 @@ class User(AbstractUser):
         unique=True,
         error_messages={"unique": _("An user with that email already exists.")},
     )
-    biography = models.TextField()
-    phone_number = PhoneNumberField(null=True)
-    photo = models.ImageField(null=True, upload_to=user_image_file_path)
+    date_of_birth = models.DateField(null=True, blank=True)
+    biography = models.TextField(null=True, blank=True)
+    phone_number = PhoneNumberField(null=True, blank=True)
+    avatar = models.ImageField(null=True, blank=True, upload_to=user_image_file_path)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
     objects = UserManager()
+
+
+class UserFollowing(models.Model):
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name="following")
+    following_user_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name="followers")
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        unique_together = ("user_id", "following_user_id")
+        index_together = ("user_id", "following_user_id")
+        ordering = ["-created"]
+
+    def __str__(self):
+        return f"{self.user_id} follows {self.following_user_id}"
