@@ -50,6 +50,7 @@ class User(AbstractUser):
         unique=True,
         error_messages={"unique": _("An user with that email already exists.")},
     )
+    username = models.CharField(max_length=64, blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
     biography = models.TextField(null=True, blank=True)
     phone_number = PhoneNumberField(null=True, blank=True)
