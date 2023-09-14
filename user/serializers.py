@@ -63,7 +63,6 @@ class UserDetailSerializer(UserSerializer):
             "avatar",
             "followers",
             "following",
-            "password",
         )
 
 
