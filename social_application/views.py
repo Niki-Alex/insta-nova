@@ -13,7 +13,8 @@ from social_application.serializers import (
     CommentListSerializer,
     PostSerializer,
     PostListSerializer,
-    PostDetailSerializer, ReactionListSerializer,
+    PostDetailSerializer,
+    ReactionListSerializer,
 )
 
 
@@ -46,6 +47,9 @@ class ReactionViewSet(viewsets.ModelViewSet):
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
+
+    # def get_queryset(self):
+    #     queryset = self.queryset
 
     def get_serializer_class(self):
         if self.action == "list":

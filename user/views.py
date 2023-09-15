@@ -5,7 +5,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from user.models import User, UserFollowing
-from user.serializers import UserSerializer, UserDetailSerializer, UserFollowingSerializer, UserFollowersSerializer
+from user.serializers import (
+    UserSerializer,
+    UserListSerializer,
+    UserDetailSerializer,
+    UserFollowingSerializer,
+    UserFollowersSerializer,
+)
 
 
 class CreateUserView(generics.CreateAPIView):
@@ -21,7 +27,7 @@ class UserUpdateView(generics.RetrieveUpdateAPIView):
 
 class UserListView(generics.ListAPIView):
     queryset = User.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = UserListSerializer
 
     def get_queryset(self):
         queryset = self.queryset
