@@ -71,6 +71,15 @@ class UserFollowingSerializer(serializers.ModelSerializer):
     first_name = serializers.ReadOnlyField(source="following_user_id.first_name")
     last_name = serializers.ReadOnlyField(source="following_user_id.last_name")
 
+    def validate(self, attrs):
+        data = super(UserFollowingSerializer, self).validate(attrs)
+        UserFollowing.validate_user_following(
+            attrs["user_id"],
+            attrs["following_user_id"],
+            serializers.ValidationError
+        )
+        return data
+
     class Meta:
         model = UserFollowing
         fields = ("id", "first_name", "last_name")
