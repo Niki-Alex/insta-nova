@@ -45,7 +45,7 @@ class ReactionViewSet(viewsets.ModelViewSet):
 
 
 class PostViewSet(viewsets.ModelViewSet):
-    queryset = Post.objects.all()
+    queryset = Post.objects.all().prefetch_related("comments__author")
     serializer_class = PostSerializer
 
     # def get_queryset(self):
