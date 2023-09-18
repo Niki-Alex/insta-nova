@@ -1,7 +1,11 @@
 from django.http import Http404
 from rest_framework import generics
+from rest_framework.authtoken.serializers import AuthTokenSerializer
+from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.settings import api_settings
 from rest_framework.views import APIView
 
 from user.models import User, UserFollowing
@@ -20,6 +24,7 @@ class CreateUserView(generics.CreateAPIView):
 
 class UserUpdateView(generics.RetrieveUpdateAPIView):
     serializer_class = UserSerializer
+    permission_classes = (IsAuthenticated,)
 
     def get_object(self):
         return self.request.user
@@ -50,6 +55,7 @@ class UserListView(generics.ListAPIView):
 class UserDetailView(generics.RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserDetailSerializer
+    permission_classes = (IsAuthenticated,)
 
 
 class UserFollowingView(generics.ListAPIView):
@@ -70,6 +76,11 @@ class UserFollowersView(generics.ListAPIView):
         queryset = UserFollowing.objects.filter(following_user_id=current_user)
 
         return queryset
+
+
+class CreateTokenView(ObtainAuthToken):
+    renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES
+    serializer_class = AuthTokenSerializer
 
 
 class UserAddFollow(APIView):
