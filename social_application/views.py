@@ -1,5 +1,5 @@
-from django.db.models import Q, F, Count, Case, When, IntegerField
-from rest_framework import viewsets
+from django.db.models import Q
+from rest_framework import viewsets, generics
 
 from social_application.models import (
     Comment,
@@ -45,11 +45,21 @@ class ReactionViewSet(viewsets.ModelViewSet):
 
 
 class PostViewSet(viewsets.ModelViewSet):
-    queryset = Post.objects.all().prefetch_related("comments__author")
+    queryset = Post.objects.all().select_related("author")
     serializer_class = PostSerializer
 
-    # def get_queryset(self):
-    #     queryset = self.queryset
+    def get_queryset(self):
+        queryset = self.queryset
+        title = self.request.query_params.get("title")
+        hashtag = self.request.query_params.get("hashtag")
+
+        if title:
+            queryset = queryset.filter(title__icontains=title)
+
+        if hashtag:
+            queryset = queryset.filter(hashtag__icontains=hashtag)
+
+        return queryset.distinct()
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -60,3 +70,23 @@ class PostViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
+
+
+class UserPostsViewSet(viewsets.ModelViewSet):
+    serializer_class = PostListSerializer
+    queryset = Post.objects.all()
+
+    def get_queryset(self):
+        current_user = self.request.user
+
+        queryset = Post.objects.filter(
+            Q(author=current_user)
+            | Q(author__in=current_user.following.values("following_user_id"))
+        )
+
+        return queryset
+
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return PostDetailSerializer
+        return PostListSerializer
