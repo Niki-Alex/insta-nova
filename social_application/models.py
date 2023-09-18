@@ -52,9 +52,9 @@ class Reaction(models.Model):
         LIKE = "like"
         DISLIKE = "dislike"
 
-    user = models.ForeignKey("user.User", on_delete=models.CASCADE)
+    author = models.ForeignKey("user.User", on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="reactions")
     reaction_type = models.CharField(max_length=7, choices=ReactionTypeChoices.choices)
 
     def __str__(self):
-        return f"{self.post.title} {self.reaction_type}d by {self.user}"
+        return f"{self.post.title} {self.reaction_type}d by {self.author}"

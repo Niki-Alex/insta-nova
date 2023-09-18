@@ -6,6 +6,7 @@ from social_application.models import (
     Post,
     Reaction,
 )
+from social_application.permissions import IsOwnerOrReadOnly
 
 from social_application.serializers import (
     ReactionSerializer,
@@ -21,6 +22,7 @@ from social_application.serializers import (
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+    permission_classes = (IsOwnerOrReadOnly,)
 
     def get_serializer_class(self):
         if self.action in ["list", "retrieve"]:
@@ -34,6 +36,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 class ReactionViewSet(viewsets.ModelViewSet):
     queryset = Reaction.objects.all()
     serializer_class = ReactionSerializer
+    permission_classes = (IsOwnerOrReadOnly,)
 
     def get_serializer_class(self):
         if self.action in ["list", "retrieve"]:
@@ -41,12 +44,13 @@ class ReactionViewSet(viewsets.ModelViewSet):
         return ReactionSerializer
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        serializer.save(author=self.request.user)
 
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all().select_related("author")
     serializer_class = PostSerializer
+    permission_classes = (IsOwnerOrReadOnly,)
 
     def get_queryset(self):
         queryset = self.queryset
@@ -75,6 +79,7 @@ class PostViewSet(viewsets.ModelViewSet):
 class UserPostsViewSet(viewsets.ModelViewSet):
     serializer_class = PostListSerializer
     queryset = Post.objects.all()
+    permission_classes = (IsOwnerOrReadOnly,)
 
     def get_queryset(self):
         current_user = self.request.user

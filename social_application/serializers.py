@@ -8,13 +8,15 @@ from social_application.models import (
 
 
 class ReactionSerializer(serializers.ModelSerializer):
+    author = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
     class Meta:
         model = Reaction
-        fields = ("id", "post", "reaction_type")
+        fields = ("id", "author", "post", "reaction_type")
 
     def validate(self, data):
         reaction = Reaction.objects.filter(
-            post_id=data["post"], user_id=data["user"]
+            post_id=data["post"], author_id=data["author"]
         )
         if reaction:
             raise serializers.ValidationError(
@@ -25,15 +27,15 @@ class ReactionSerializer(serializers.ModelSerializer):
 
 class ReactionListSerializer(ReactionSerializer):
     post = serializers.ReadOnlyField(source="post.title")
-    user = serializers.ReadOnlyField(source="user.username")
+    author = serializers.ReadOnlyField(source="author.username")
 
     class Meta:
         model = Reaction
-        fields = ("id", "post", "user", "reaction_type")
+        fields = ("id", "post", "author", "reaction_type")
 
 
 class ReactionDetailSerializer(serializers.ModelSerializer):
-    username = serializers.ReadOnlyField(source="user.username")
+    username = serializers.ReadOnlyField(source="author.username")
     reaction = serializers.ReadOnlyField(source="reaction_type")
 
     class Meta:
