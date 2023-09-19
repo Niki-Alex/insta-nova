@@ -1,4 +1,3 @@
-from django.http import Http404
 from rest_framework import generics, status
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -7,7 +6,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
 from rest_framework.views import APIView
-from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from user.models import User, UserFollowing
@@ -100,12 +98,13 @@ class LogoutTokenView(APIView):
 
 
 class UserAddFollow(APIView):
-    @staticmethod
-    def get_object(pk):
+    permission_classes = (IsAuthenticated,)
+
+    def get_object(self, pk):
         try:
             return User.objects.get(pk=pk)
         except User.DoesNotExist:
-            return Http404
+            return Response({"error": "User is not found"}, status=status.HTTP_404_NOT_FOUND)
 
     def get(self, request, pk):
         user = self.get_object(pk)
