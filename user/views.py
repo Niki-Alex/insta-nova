@@ -1,3 +1,5 @@
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import generics, status
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -59,6 +61,28 @@ class UserListView(generics.ListAPIView):
 
         return queryset.distinct()
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "username",
+                type=OpenApiTypes.STR,
+                description="Filter by username",
+            ),
+            OpenApiParameter(
+                "first_name",
+                type=OpenApiTypes.STR,
+                description="Filter by first_name",
+            ),
+            OpenApiParameter(
+                "date_of_birth",
+                type=OpenApiTypes.DATE,
+                description="Filter by date_of_birth",
+            ),
+        ]
+    )
+    def get(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
 
 class UserDetailView(generics.RetrieveAPIView):
     queryset = User.objects.all()
@@ -95,6 +119,7 @@ class CreateTokenView(ObtainAuthToken):
 
 class LogoutTokenView(APIView):
     permission_classes = (IsAuthenticated,)
+
     def post(self, request):
         token = request.data.get("token")
 
