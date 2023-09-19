@@ -2,6 +2,7 @@ from rest_framework import generics, status
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.exceptions import ValidationError
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
@@ -16,6 +17,12 @@ from user.serializers import (
     UserFollowingSerializer,
     UserFollowersSerializer,
 )
+
+
+class Pagination(PageNumberPagination):
+    page_size = 5
+    page_size_query_param = "page_size"
+    max_page_size = 100
 
 
 class CreateUserView(generics.CreateAPIView):
@@ -33,6 +40,7 @@ class UserUpdateView(generics.RetrieveUpdateAPIView):
 class UserListView(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserListSerializer
+    pagination_class = Pagination
 
     def get_queryset(self):
         queryset = self.queryset
@@ -60,6 +68,7 @@ class UserDetailView(generics.RetrieveAPIView):
 
 class UserFollowingView(generics.ListAPIView):
     serializer_class = UserFollowingSerializer
+    pagination_class = Pagination
 
     def get_queryset(self):
         current_user = self.request.user
@@ -70,6 +79,7 @@ class UserFollowingView(generics.ListAPIView):
 
 class UserFollowersView(generics.ListAPIView):
     serializer_class = UserFollowersSerializer
+    pagination_class = Pagination
 
     def get_queryset(self):
         current_user = self.request.user

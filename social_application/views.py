@@ -1,5 +1,6 @@
 from django.db.models import Q
 from rest_framework import viewsets
+from rest_framework.pagination import PageNumberPagination
 
 from social_application.models import (
     Comment,
@@ -17,6 +18,12 @@ from social_application.serializers import (
     PostDetailSerializer,
     ReactionListSerializer,
 )
+
+
+class Pagination(PageNumberPagination):
+    page_size = 5
+    page_size_query_param = "page_size"
+    max_page_size = 100
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -50,6 +57,7 @@ class ReactionViewSet(viewsets.ModelViewSet):
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all().select_related("author")
     serializer_class = PostSerializer
+    pagination_class = Pagination
     permission_classes = (IsOwnerOrReadOnly,)
 
     def get_queryset(self):
@@ -77,8 +85,9 @@ class PostViewSet(viewsets.ModelViewSet):
 
 
 class UserPostsViewSet(viewsets.ModelViewSet):
-    serializer_class = PostListSerializer
     queryset = Post.objects.all()
+    serializer_class = PostListSerializer
+    pagination_class = Pagination
     permission_classes = (IsOwnerOrReadOnly,)
 
     def get_queryset(self):
