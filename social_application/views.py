@@ -1,5 +1,5 @@
 from django.db.models import Q
-from rest_framework import viewsets, generics
+from rest_framework import viewsets
 
 from social_application.models import (
     Comment,
@@ -20,7 +20,7 @@ from social_application.serializers import (
 
 
 class CommentViewSet(viewsets.ModelViewSet):
-    queryset = Comment.objects.all()
+    queryset = Comment.objects.all().select_related("post", "author")
     serializer_class = CommentSerializer
     permission_classes = (IsOwnerOrReadOnly,)
 
@@ -34,7 +34,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 
 class ReactionViewSet(viewsets.ModelViewSet):
-    queryset = Reaction.objects.all()
+    queryset = Reaction.objects.all().select_related("author", "post")
     serializer_class = ReactionSerializer
     permission_classes = (IsOwnerOrReadOnly,)
 
