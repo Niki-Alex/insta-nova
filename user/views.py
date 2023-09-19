@@ -1,5 +1,5 @@
 from django.http import Http404
-from rest_framework import generics
+from rest_framework import generics, status
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.exceptions import ValidationError
@@ -7,6 +7,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
 from rest_framework.views import APIView
+from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from user.models import User, UserFollowing
 from user.serializers import (
@@ -81,6 +83,20 @@ class UserFollowersView(generics.ListAPIView):
 class CreateTokenView(ObtainAuthToken):
     renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES
     serializer_class = AuthTokenSerializer
+
+
+class LogoutTokenView(APIView):
+    permission_classes = (IsAuthenticated,)
+    def post(self, request):
+        token = request.data.get("token")
+
+        if token:
+            refresh_token = RefreshToken(token)
+            refresh_token.blacklist()
+
+            return Response({"message": "Logout successful"}, status=status.HTTP_200_OK)
+
+        return Response({"error": "Failed to logout"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class UserAddFollow(APIView):
